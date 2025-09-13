@@ -13,7 +13,7 @@ export class UserRepository implements IUserRepository{
 
     async insert(props: IUser): Promise<IUser> {
         const result = await prisma.user.create({
-            data: {id: props.id,name: props.name, email: props.email, password: props.password}
+            data: {id: props.id,name: props.name, email: props.email, password: props.password, role: props.role || "student"}
         })
         
         return result;
@@ -32,7 +32,7 @@ export class UserRepository implements IUserRepository{
     async update(props: IUser, id: string): Promise<IUser> {
         const result = await prisma.user.update({
             where: { id },
-            data: {id: props.id,name: props.name, email: props.email, password: props.password},
+            data: {id: props.id,name: props.name, email: props.email, password: props.password, role: props.role},
         })
 
         return result;
@@ -44,9 +44,9 @@ export class UserRepository implements IUserRepository{
         })
     }
 
-    async findUserByEmail(Email: string): Promise<IUser> {
+    async findUserByEmail(email: string): Promise<IUser> {
         const result = await prisma.user.findUnique({
-          where: { name: Email }
+          where: { email }
         });
         if(!result) throw new Error('User not found')
         

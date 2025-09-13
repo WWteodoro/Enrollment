@@ -1,5 +1,6 @@
-import { createUUID } from "../../utills/createUUID";
-import { IUser } from "../IUserInterface";
+import { IUser } from "../interfaces/IUserInterface";
+import { createUUID } from "../utills/createUUID";
+
 
 export class User{
     id: IUser['id'];

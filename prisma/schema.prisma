@@ -7,21 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @db.VarChar(255)
-  email     String   @unique
+  email     String    @db.VarChar(255) @unique
   password  String   @db.VarChar(255)
-  role      String   @dbVarChar(255)
+  role      String   @db.VarChar(255)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -29,10 +20,10 @@ model User {
 }
 
 model Course {
-  id          String   @id @default(uuid())
-  title       String
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @db.VarChar(255)
   slug        String   @unique
-  priceCents  Int
+  priceCents  Int      
   capacity    Int?     // opcional
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -43,15 +34,19 @@ model Course {
 model Enrollment {
   id         String   @id @default(uuid())
   student    User     @relation(fields: [studentId], references: [id])
-  studentId  String
+  studentId  String   @db.Uuid
   course     Course   @relation(fields: [courseId], references: [id])
-  courseId   String
-  status     String @default(PENDING_PAYMENT)
+  courseId   String   @db.Uuid
+  status     String   @db.VarChar(255)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@unique([studentId, courseId]) // evita matrícula duplicada
+  paymentEvents PaymentEvent[]  // ← relação inversa
+  emailLogs     EmailLog[]      // ← relação inversa
+
+  @@unique([studentId, courseId])
 }
+
 
 model PaymentEvent {
   id            String   @id @default(uuid())
