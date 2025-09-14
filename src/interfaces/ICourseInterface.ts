@@ -27,6 +27,5 @@ export interface ICourseGetPageRequest {
 
 
 export interface ICourseGetRequest{
-    id?: string;
-    slug?: string;
+    idOrSlug: string;
 }
