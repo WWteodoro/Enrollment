@@ -6,6 +6,24 @@ import { AppError } from "../errors/AppError";
 const prisma = new PrismaClient();
 export class EnrollmentRepository implements IEnrollmentRepository{
     constructor(){}
+    async getByStudent(id: string): Promise<IEnrollment[]> {
+        const user = await prisma.user.findUnique({
+            where: {id}
+        })
+
+        if(!user) throw new AppError("User not found");
+
+        if(user.role === "admin"){
+            const result = await prisma.enrollment.findMany({})
+            return result
+        } else {
+            const result = await prisma.enrollment.findMany({
+                where: {studentId: id}
+            })
+            return result
+        }
+    }
+
     async findAll(): Promise<IEnrollment[]> {
         const result = await prisma.enrollment.findMany()
         return result

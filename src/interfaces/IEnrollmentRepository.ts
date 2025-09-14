@@ -4,4 +4,5 @@ export interface IEnrollmentRepository{
     findAll(): Promise<IEnrollment[]>
     create(props: IEnrollment): Promise<IEnrollment>
     get(id: string): Promise<IEnrollment>
+    getByStudent(id:string):Promise<IEnrollment[]>
 }

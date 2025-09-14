@@ -17,3 +17,7 @@ export interface IEnrollmentGetRequest{
     id: string
 }
 
+export interface IEnrollmentGetByStudentRequest{
+    id: string
+}
+
