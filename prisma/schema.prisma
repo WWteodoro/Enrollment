@@ -24,7 +24,7 @@ model Course {
   title       String   @db.VarChar(255)
   slug        String   @unique
   priceCents  Int      
-  capacity    Int?     // opcional
+  capacity    Int?     
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -41,8 +41,8 @@ model Enrollment {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  paymentEvents PaymentEvent[]  // ← relação inversa
-  emailLogs     EmailLog[]      // ← relação inversa
+  paymentEvents PaymentEvent[]  
+  emailLogs     EmailLog[]      
 
   @@unique([studentId, courseId])
 }
