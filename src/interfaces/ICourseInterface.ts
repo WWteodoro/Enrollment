@@ -2,8 +2,8 @@ export interface ICourse{
     id: string;
     title: string;
     slug: string;
-    priceCents: string;
-    capacity?: number;
+    priceCents: number;
+    capacity?: number | null;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -11,7 +11,7 @@ export interface ICourse{
 export interface ICourseCreateRequest{
     title: string;
     slug: string;
-    priceCents: string;
+    priceCents: number;
     capacity?: number;
     createdAt?: Date;
     updatedAt?: Date;

@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { ICourseRepository } from "../interfaces/ICourseRepository";
 import { ICourse, ICourseGetPageRequest, ICourseGetRequest } from "../interfaces/ICourseInterface";
 import { AppError } from "../errors/AppError";
+import { isUUID } from "../utills/isUUID";
 
 const prisma = new PrismaClient();
 export class CourseRepository implements ICourseRepository{
@@ -13,7 +14,7 @@ export class CourseRepository implements ICourseRepository{
 
     async create(props: ICourse): Promise<ICourse> {
         const result = await prisma.course.create({
-            data: {props}
+            data: props
         })
 
         return result
@@ -70,21 +71,25 @@ export class CourseRepository implements ICourseRepository{
     }
 
     async get(props: ICourseGetRequest): Promise<ICourse> {
-        let result = await prisma.course.findUnique({
-            where: { id: props.idOrSlug}
-        })
+        const { idOrSlug } = props;
 
-        if(!result){
+        let result;
+
+        if (isUUID(idOrSlug)) {
             result = await prisma.course.findUnique({
-                where: {slug: props.idOrSlug}
-            })
-
-            if(!result) throw new AppError("User not found");
-
-            return result
+            where: { id: idOrSlug }
+            });
         } else {
-            return result
+            result = await prisma.course.findUnique({
+            where: { slug: idOrSlug }
+            });
         }
+
+            if (!result) {
+                throw new AppError("Course not found", 404);
+        }
+
+        return result;
     }
     
 }

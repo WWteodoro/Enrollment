@@ -29,7 +29,8 @@
     "prisma": "^5.4.2",
     "redis": "^5.8.2",
     "typescript": "^5.2.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "validator": "^13.15.15"
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",

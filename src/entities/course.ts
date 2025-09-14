@@ -15,7 +15,7 @@ export class Course{
         this.title = props.title
         this.slug = props.slug
         this.priceCents = props.priceCents
-        this.capacity = props.capacity || 9999999
+        this.capacity = props.capacity
         this.createdAt = props.createdAt || new Date();
         this.updatedAt = new Date();
     }
