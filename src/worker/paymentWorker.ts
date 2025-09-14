@@ -1,61 +1,72 @@
-import amqp from 'amqplib';
+import { createClient } from 'redis';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://root:root@localhost:5433/postgres';
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://root:root@localhost:5432/postgres';
 
+const redis = createClient({ url: REDIS_URL });
 const pool = new Pool({ connectionString: DATABASE_URL });
 
 async function startWorker() {
-  const connection = await amqp.connect(RABBITMQ_URL);
-  const channel = await connection.createChannel();
+  await redis.connect();
+  console.log('[worker] Escutando stream "payment_requested"...');
 
-  await channel.assertQueue('payment_requested', { durable: true });
+  let lastId = '0';
 
-  console.log('[worker] Aguardando mensagens em payment_requested...');
+  while (true) {
+  const result: any = await redis.sendCommand([
+    'XREAD',
+    'BLOCK',
+    '5000',
+    'COUNT',
+    '1',
+    'STREAMS',
+    'payment_requested',
+    lastId
+  ]);
 
-  channel.consume('payment_requested', async (msg) => {
-    if (!msg) return;
+  if (!Array.isArray(result) || result.length === 0) continue;
 
-    const data = JSON.parse(msg.content.toString());
-    const enrollmentId = data.enrollmentId;
-    const studentId = data.studentId;
-    const courseId = data.courseId;
+  const [streamName, messages] = result[0]; // result[0] = ['payment_requested', [ [id, fields] ] ]
 
-    console.log(`[worker] Processando pagamento da matrícula ${enrollmentId}...`);
+  for (const [id, fields] of messages) {
+    lastId = id;
+
+    const payload: Record<string, string> = {};
+    for (let i = 0; i < fields.length; i += 2) {
+      payload[fields[i]] = fields[i + 1];
+    }
+
+    const { enrollmentId, studentId, courseId } = payload;
+    console.log('[worker] Tentando atualizar matrícula com ID:', enrollmentId);
+
+    console.log(`[worker] Processando matrícula ${enrollmentId}...`);
 
     const delay = Math.floor(Math.random() * 2000) + 3000;
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise(resolve => setTimeout(resolve, delay));
 
     const client = await pool.connect();
-    try {
-      await client.query(
-        `UPDATE enrollments SET status = 'paid' WHERE id = $1 AND status = 'pending_payment'`,
-        [enrollmentId]
-      );
-      console.log(`[worker] Matrícula ${enrollmentId} marcada como 'paid'.`);
+    await client.query(
+      `UPDATE "Enrollment" SET status = 'paid' WHERE id = $1`,
+      [enrollmentId]
+    );
+    client.release();
 
-      const welcomePayload = {
-        enrollmentId,
-        studentId,
-        courseId,
-        sentAt: new Date().toISOString()
-      };
-
-      console.log('[worker] welcome_email:', welcomePayload);
-    } catch (err) {
-      console.error('[worker] Erro ao atualizar matrícula:', err);
-    } finally {
-      client.release();
-      channel.ack(msg);
-    }
-  });
+    console.log('[worker] welcome_email:', {
+      enrollmentId,
+      studentId,
+      courseId,
+      sentAt: new Date().toISOString()
+    });
+  }
 }
 
-startWorker().catch((err) => {
-  console.error('[worker] Falha ao iniciar:', err);
+}
+
+startWorker().catch(err => {
+  console.error('[worker] Erro fatal:', err);
   process.exit(1);
 });
