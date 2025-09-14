@@ -21,8 +21,14 @@ export class EnrollmentRepository implements IEnrollmentRepository{
         if(!user) throw new AppError("User not found");
 
         const enrollmentAlreadyExists = await prisma.enrollment.findUnique({
-            where: {studentId: props.studentId, courseId: props.courseId}
-        })
+            where: {
+                studentId_courseId: {
+                studentId: props.studentId,
+                courseId: props.courseId
+               }
+            }
+        });
+
 
         if(enrollmentAlreadyExists) throw new AppError("Enrollment Already Exists");
 
@@ -31,6 +37,8 @@ export class EnrollmentRepository implements IEnrollmentRepository{
         })
 
         if(!capacity) throw new AppError("Course does not exists");
+
+        if(capacity.capacity === null) capacity.capacity = 9999999
 
         if(capacity.capacity <=0) throw new AppError("Full Capacity Reached")
 

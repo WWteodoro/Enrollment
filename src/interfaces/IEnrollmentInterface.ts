@@ -2,7 +2,7 @@ export interface IEnrollment {
     id: string;
     studentId: string;
     courseId: string;
-    status: String;
+    status: string;
     createdAt?: Date
     updatedAt?: Date
 }
