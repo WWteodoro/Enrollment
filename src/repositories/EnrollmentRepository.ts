@@ -6,6 +6,22 @@ import { AppError } from "../errors/AppError";
 const prisma = new PrismaClient();
 export class EnrollmentRepository implements IEnrollmentRepository{
     constructor(){}
+    async delete(id: string): Promise<void> {
+        const result = await prisma.enrollment.findUnique({
+            where: {id}
+        })
+
+        if(!result) throw new AppError("Enrollment doesn't exists");
+
+        if(result.status === "pending_payment"){
+            await prisma.enrollment.delete({
+                where: {id}
+            })
+        } else {
+            throw new AppError("Cannot exit to this course")
+        }
+    }
+
     async getByStudent(id: string): Promise<IEnrollment[]> {
         const user = await prisma.user.findUnique({
             where: {id}

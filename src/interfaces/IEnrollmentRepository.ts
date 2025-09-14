@@ -5,4 +5,5 @@ export interface IEnrollmentRepository{
     create(props: IEnrollment): Promise<IEnrollment>
     get(id: string): Promise<IEnrollment>
     getByStudent(id:string):Promise<IEnrollment[]>
+    delete(id:string):Promise<void>
 }

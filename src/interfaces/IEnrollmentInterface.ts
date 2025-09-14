@@ -21,3 +21,7 @@ export interface IEnrollmentGetByStudentRequest{
     id: string
 }
 
+export interface IEnrollmentDeleteRequest{
+    id: string;
+}
+
