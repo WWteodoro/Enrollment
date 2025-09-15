@@ -1,0 +1,138 @@
+## 🧠 Enova Academy — API de Matrículas
+
+API REST para gestão de cursos, usuários e matrículas com fluxo de pagamento simulado via mensageria.
+
+---
+
+### 🚀 Como rodar o projeto
+# 1. Clone o repositório
+git clone https://github.com/WWteodoro/Enrollment.git
+cd Enrollment
+
+# 2. Crie o arquivo de variáveis de ambiente
+cp .env.example .env
+
+# 3. Suba os contêineres (API, banco de dados, Redis, etc.)
+# A flag --build garante que a imagem será construída na primeira vez.
+docker-compose up --build
+
+# 4. (Em outro terminal) Rode as migrations e o seed para popular o banco
+npx prisma migrate dev
+yarn seed
+
+# 5. Comandos para rodar
+yarn start:dev
+yarn worker
+
+> A aplicação estará disponível em `http://localhost:3333`
+
+---
+
+### ⚙️ Variáveis de ambiente (.env)
+As variáveis abaixo são necessárias para a aplicação. O arquivo .env não é versionado por segurança.
+
+# Porta da aplicação
+PORT=3333
+
+# URL de conexão com o banco de dados.
+# Ao usar Docker, o host deve ser o nome do serviço do Postgres no docker-compose.yaml (ex: "postgres").
+DATABASE_URL="postgresql://usuario:senha@postgres:5432/enova_db"
+
+# Secret para geração dos tokens JWT. Use um valor seguro.
+JWT_SECRET=seu-segredo-super-secreto-aqui
+
+# Habilita ou desabilita o webhook de pagamento (para testes)
+APP_USE_WEBHOOK=true
+
+---
+
+### 📦 Seed de exemplo
+
+```json
+{
+  "users": [
+    { "email": "admin@enova.ac", "password": "Admin123!", "role": "admin" },
+    { "email": "alice@example.com", "password": "Alice123!", "role": "student" }
+  ],
+  "courses": [
+    { "title": "Fundamentos de Marketing Digital", "slug": "fund-marketing", "price_cents": 9900, "capacity": 2 },
+    { "title": "Introdução a Data Science", "slug": "intro-ds", "price_cents": 12900 }
+  ]
+}
+```
+
+---
+
+Base URL: http://localhost:3333
+
+🔐 Autenticação
+POST /auth/signup - Cria um novo usuário.
+
+POST /auth/login - Autentica um usuário e retorna um token JWT.
+
+Exemplo de Login:
+
+Bash
+
+curl -X POST http://localhost:3333/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@enova.ac", "password": "Admin123!"}'
+
+# Resposta esperada:
+# { "token": "eyJhbGciOiJI..." }
+Dica: Use o token retornado no header Authorization: Bearer <token> para as rotas autenticadas.
+
+📘 Cursos (Aberto para todos)
+GET /courses - Lista todos os cursos (com cache).
+
+GET /courses/{id_ou_slug} - Busca um curso específico.
+
+➕ Cursos (Admin)
+POST /courses - Cria um novo curso.
+
+PUT /courses/{id} - Atualiza um curso.
+
+DELETE /courses/{id} - Deleta um curso.
+
+Exemplo de criação de curso:
+
+Bash
+
+curl -X POST http://localhost:3333/courses \
+  -H "Authorization: Bearer <seu_token_de_admin>" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Novo Curso de IA", "slug": "novo-curso-ia", "priceCents": 15000, "capacity": 10}'
+🎓 Matrículas (Autenticado)
+POST /enrollments - Cria uma nova matrícula para o usuário logado.
+
+GET /students/{studentId}/enrollments - Lista matrículas de um aluno (Admin pode ver de qualquer um).
+
+DELETE /enrollments/{id} - Cancela uma matrícula (pending_payment).
+
+Exemplo de matrícula:
+
+Bash
+
+curl -X POST http://localhost:3333/enrollments \
+  -H "Authorization: Bearer <seu_token_de_aluno>" \
+  -H "Content-Type: application/json" \
+  -d '{"courseId": "uuid-do-curso-aqui"}'
+
+### 🛠️ Arquitetura & Decisões
+
+- **Node.js + TypeScript** com Express
+- **PostgreSQL** com migrations e índice único `(student_id, course_id)`
+- **Redis** para cache de cursos (invalida ao criar/editar)
+- **Mensageria simulada** com fila local e worker
+- **JWT + RBAC** para segurança
+- **Logs estruturados** e endpoints de observabilidade (`/health`, `/metrics`)
+- **CI/CD** com GitHub Actions (lint, test, build)
+- **Docker Compose** com app + db + redis + worker
+
+---
+
+Rodando os Testes
+Bash
+
+# Rodar todos os testes
+yarn jest
