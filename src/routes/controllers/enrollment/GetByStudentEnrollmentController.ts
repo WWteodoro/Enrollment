@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { IEnrollmentRepository } from "../../../interfaces/IEnrollmentRepository";
-import { GetEnrollmentService } from "../../../services/EnrollmentService/GetEnrollmentService";
-import { GetByStudentEnrollmentService } from "../../../services/EnrollmentService/getByStudentEnrollmentService";
+import { GetByStudentEnrollmentService } from "../../../services/EnrollmentService/GetByStudentEnrollmentService";
 
 export class GetByStudentEnrollmentController{
     constructor(private enrollmentRepo: IEnrollmentRepository){}

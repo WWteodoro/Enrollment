@@ -4,6 +4,7 @@ import { userAuthenticateRoute } from "./authRoute";
 import { userRoute } from "./userRoute";
 import { courseRoute } from "./courseRoute";
 import { enrollmentRoute } from "./enrollmentRoute";
+import { observeRoute } from "./observeRoute";
 
 export const route = express.Router();
 
@@ -12,3 +13,4 @@ route.use('/user', userRoute);
 route.use('/auth', userAuthenticateRoute);
 route.use('/courses', courseRoute);
 route.use('/enrollment', enrollmentRoute);
+route.use('/observe', observeRoute);
