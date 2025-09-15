@@ -1,6 +1,7 @@
 import { createClient } from 'redis';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { AppError } from '../errors/AppError';
 
 dotenv.config();
 
@@ -11,6 +12,11 @@ const redis = createClient({ url: REDIS_URL });
 const pool = new Pool({ connectionString: DATABASE_URL });
 
 async function startWorker() {
+
+    if (process.env.APP_USE_WEBHOOK === 'true') {
+                throw new AppError('Worker desativado');
+            }
+
   await redis.connect();
   console.log('[worker] Escutando stream "payment_requested"...');
 

@@ -7,6 +7,7 @@ import { resolveController } from "../adapters/resolverController";
 import { GetByStudentEnrollmentController } from "./controllers/enrollment/GetByStudentEnrollmentController";
 import { DeleteEnrollmentService } from "../services/EnrollmentService/DeleteEnrollmentService";
 import { DeleteEnrollmentController } from "./controllers/enrollment/DeleteEnrollmentController";
+import { WebhookEnrollmentController } from "./controllers/enrollment/WebhookEnrollmentController";
 
 export const enrollmentRoute = Router();
 
@@ -16,6 +17,7 @@ const getEnrollmentController = new GetEnrollmentController(enrollmentRepo)
 const listEnrollmentController = new ListEnrollmentController(enrollmentRepo)
 const getByStudentEnrollmentController = new GetByStudentEnrollmentController(enrollmentRepo)
 const deleteEnrollmentController = new DeleteEnrollmentController(enrollmentRepo)
+const webhookEnrollmentController = new WebhookEnrollmentController(enrollmentRepo)
 
 enrollmentRoute.post('/', resolveController(async (req: Request, res: Response) => {
     return await createEnrollmentController.handle(req,res)
@@ -35,6 +37,10 @@ enrollmentRoute.get('/students/:id/enrollment', resolveController(async (req: Re
 
 enrollmentRoute.delete('/enrollments/:id/', resolveController(async (req: Request, res: Response) => {
     return await deleteEnrollmentController.handle(req,res)
+}))
+
+enrollmentRoute.put('/webhooks/payment/:id/:status', resolveController(async (req: Request, res: Response) => {
+    return await webhookEnrollmentController.handle(req,res)
 }))
 
 

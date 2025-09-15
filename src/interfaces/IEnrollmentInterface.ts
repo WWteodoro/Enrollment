@@ -25,3 +25,7 @@ export interface IEnrollmentDeleteRequest{
     id: string;
 }
 
+export interface IEnrollmentWebhook{
+    id: string
+    status: string
+}

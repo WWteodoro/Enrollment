@@ -1,4 +1,4 @@
-import { IEnrollment } from "./IEnrollmentInterface";
+import { IEnrollment, IEnrollmentWebhook } from "./IEnrollmentInterface";
 
 export interface IEnrollmentRepository{
     findAll(): Promise<IEnrollment[]>
@@ -6,4 +6,5 @@ export interface IEnrollmentRepository{
     get(id: string): Promise<IEnrollment>
     getByStudent(id:string):Promise<IEnrollment[]>
     delete(id:string):Promise<void>
+    webhook(props: IEnrollmentWebhook): Promise<IEnrollment>
 }

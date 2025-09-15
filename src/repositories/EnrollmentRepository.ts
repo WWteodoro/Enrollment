@@ -1,11 +1,34 @@
 import { PrismaClient } from "@prisma/client";
 import { IEnrollmentRepository } from "../interfaces/IEnrollmentRepository";
-import { IEnrollment } from "../interfaces/IEnrollmentInterface";
+import { IEnrollment, IEnrollmentWebhook } from "../interfaces/IEnrollmentInterface";
 import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();
 export class EnrollmentRepository implements IEnrollmentRepository{
     constructor(){}
+    async webhook(props: IEnrollmentWebhook): Promise<IEnrollment> {
+        if (process.env.APP_USE_WEBHOOK !== 'true') {
+            throw new AppError('Webhook desativado');
+        }
+
+        const enrollment = await prisma.enrollment.findUnique({
+            where: {id: props.id}
+        })
+
+        if(!enrollment) throw new AppError("Enrollment not found");
+
+        if(enrollment.status === "pending_payment"){
+            const result = await prisma.enrollment.update({
+                where: {id: props.id},
+                data: props
+            })
+
+            return result
+        } else {
+            return enrollment
+        }
+    }
+
     async delete(id: string): Promise<void> {
         const result = await prisma.enrollment.findUnique({
             where: {id}
